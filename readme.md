@@ -166,28 +166,65 @@ sudo fdisk -l
 ```
 ![image](https://github.com/demainic/cloud/assets/79651776/a6f52349-73d2-4144-949d-a2175c1c19d1)
 
-![image](https://github.com/demainic/cloud/assets/79651776/ba7945f0-bd94-4dd8-91e4-59543ccc511a)
+
+5. Format the block devices and mount them on a destination folder you created
+![image](https://github.com/demainic/cloud/assets/79651776/69eb4b33-b76f-4f5e-bf0e-40303753af76)
 ![image](https://github.com/demainic/cloud/assets/79651776/6c2d05b9-d3fe-4e1c-bcfa-e0a255532c7b)
 
-![image](https://github.com/demainic/cloud/assets/79651776/69eb4b33-b76f-4f5e-bf0e-40303753af76)
-
+6. write a text file to the 
 ```
-sudo targetcli /iscsi/${TARGET_IQN}/tpg1/acls create iqn.1994-05.com.redhat:9fbf494cf22d
-```  
+sudo bash -c "echo 'hello world' > test.txt"
+```
+![image](https://github.com/demainic/cloud/assets/79651776/14df3139-5fec-4d67-bc41-6a76b97835b6)
 
+7. unmount device
+```
+sudo umount ~/iscsi_mount
+```
+8. disconnect
+```
+sudo iscsiadm -m node --logout
+```
+9. reconnect
+```
+sudo iscsiadm -m node --targetname "iqn.2003-01.org.linux-iscsi.target.x8664:sn.8d821927272c" --portal "10.10.2.10:3260" --login
+```
+10. remount
+```
+sudo mount /dev/sda ~/iscsi_mount
+```
+11. On the intitatior, write a small script that writes data into a file on your remote block-level device,
+then sleeps for 5s, and continues to do so N times
+```
+for i in {1..10}; do
+    echo "Data $i" | sudo tee -a ~/iscsi_mount/data.txt
+    sleep 5
+done
+```
+![image](https://github.com/demainic/cloud/assets/79651776/6dc0835d-a69d-4e5a-ab21-c1b10ea52b80)
 
+12. install tcpdump on target and start capturing data
+```
+sudo yum install tcpdump
+sudo tcpdump -i eth0 port 3260 -w iscsi-capture.pcap
+```
+13. Download file local
+```
+scp -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa centos@160.85.31.188:iscsi-capture.pcap /Downloads/iscsi-capture.pcap
+```
+![image](https://github.com/demainic/cloud/assets/79651776/1bddab2b-862d-4675-90d7-e5a0fa5ff5c0)
 
+13. use wireshark to analyze the data
+-> could not download the file
 
-
-
-
-10. )
-Added Port 
-![image](https://github.com/demainic/cloud/assets/79651776/5655aed9-1930-4067-81f1-4f705127ec12)
-
-![image](https://github.com/demainic/cloud/assets/79651776/064dd689-046c-447b-aa71-679100a3011f)
-
-![image](https://github.com/demainic/cloud/assets/79651776/3f470217-3230-49e4-adc1-0ba0f2f7e89c)
+14.Simulate device failures by zeroing out the disk images we made with fallocate
+on target and observer:
+```
+dd if=/dev/zero of=block1 bs=4M count=1
+sudo zpool scrub mypool
+sudo zpool status mypool
+```
+![image](https://github.com/demainic/cloud/assets/79651776/f449fb10-8c37-4cf8-ac20-94467b34b952)
 
 
 ### Task 2
