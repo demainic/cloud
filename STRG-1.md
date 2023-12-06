@@ -210,12 +210,13 @@ sudo tcpdump -i eth0 port 3260 -w iscsi-capture.pcap
 ```
 13. Download file local
 ```
-scp -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa centos@160.85.31.188:iscsi-capture.pcap /Downloads/iscsi-capture.pcap
+sftp -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa centos@160.85.31.236
+/Downloads/iscsi-capture.pcap
 ```
 ![image](https://github.com/demainic/cloud/assets/79651776/1bddab2b-862d-4675-90d7-e5a0fa5ff5c0)
 
 13. use wireshark to analyze the data
--> could not download the file
+![image](https://github.com/demainic/cloud/assets/79651776/5c438db8-8c38-4327-9d49-bb1c21bbdde2)
 
 14.Simulate device failures by zeroing out the disk images we made with fallocate
 on target and observer:
